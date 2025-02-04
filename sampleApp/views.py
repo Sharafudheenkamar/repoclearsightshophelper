@@ -191,11 +191,11 @@ class Reject_Man(View):
             return HttpResponse('''<script>alert("successfully Rejected");window.location="/ApprovePage/"</script>''')  
         
     
-
+import pyttsx3
 class CheckProductInBlock(APIView):
     def get(self, request, product_id, *args, **kwargs):
         # Iterate through all blocks to check if the product ID exists in the data field
-        products = ProductTable.objects.all()
+        products = ProductTable.objects.filter(ProductId=product_id).first()
     
         if not products.exists():
             return Response({"message": "No products available"}, status=status.HTTP_404_NOT_FOUND)
