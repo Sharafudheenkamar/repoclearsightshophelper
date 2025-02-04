@@ -1,10 +1,10 @@
-from django.http import HttpResponse
+from django.http import HttpResponse,JsonResponse
 from django.shortcuts import render
 from django.views import View
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-import json
+
 
 from .models import FeedBack, LoginTable, ManufactureTable, ProductTable
 from sampleApp.form import  AddProductForm, UserRegForm, manufactureform
@@ -195,26 +195,40 @@ class Reject_Man(View):
 class CheckProductInBlock(APIView):
     def get(self, request, product_id, *args, **kwargs):
         # Iterate through all blocks to check if the product ID exists in the data field
-        blocks = Block.objects.all()
+        products = ProductTable.objects.all()
+    
+        if not products.exists():
+            return Response({"message": "No products available"}, status=status.HTTP_404_NOT_FOUND)
 
-        for block in blocks:
-            try:
-                block_data = json.loads(block.data)  # Parse the block data (assuming it's JSON)
-                # Check if the ProductId is in the block data
-                if block_data.get("ProductId") == product_id:
-                    return Response(
-                        {"message": f"Product with ID {product_id} found in block {block.index}."},
-                        status=status.HTTP_200_OK,
-                    )
-            except json.JSONDecodeError:
-                # If the block data is not valid JSON, continue to the next block
-                continue
+        # Convert product details to text
+        text_data = ""
+        for product in products:
+            text_data += f"Product Name: {product.ProductName or 'N/A'}, "
+            text_data += f"Product ID: {product.ProductId or 'N/A'}, "
+            text_data += f"Type: {product.ProductType or 'N/A'}, "
+            text_data += f"Manufacture Date: {product.Manufacturedate or 'N/A'}, "
+            text_data += f"Expiry Date: {product.Expirydate or 'N/A'}, "
+            text_data += f"Price: {product.Productprice or 'N/A'} rupees, "
+            text_data += f"Offers: {product.Offers or 'No offers available'}. "
 
-        # If no block contains the product ID
-        return Response(
-            {"message": f"Product with ID {product_id} not found in any block."},
-            status=status.HTTP_404_NOT_FOUND,
-        )
+        # Initialize text-to-speech engine
+        engine = pyttsx3.init()
+        engine.setProperty('rate', 150)  # Adjust speech speed
+
+        # # Save the speech output as an audio file
+        # audio_path = os.path.join(settings.MEDIA_ROOT, "product_audio.mp3")
+        # engine.save_to_file(text_data, audio_path)
+        # engine.runAndWait()
+
+        # # Return the audio file response
+        # return FileResponse(open(audio_path, 'rb'), content_type='audio/mpeg', as_attachment=True, filename="product_details.mp3")
+            # Initialize text-to-speech engine
+
+        engine.say(text_data)  # Speak out loud through the laptop speaker
+        engine.runAndWait()  # Wait until speaking is done
+
+        return JsonResponse({"message": "Speaking out product details."})
+# pip install pyttsx3
 
 class UserRegistration(APIView):
     def post(self, request, *args, **kwargs):
