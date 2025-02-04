@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/approve.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body>
+    <table >
+        <tr>
+            <th>ID</th>
+            <th>Company Name</th>
+            <th>Company Address</th>
+            <th>Email</th>
+            <th>Phone No</th>
+            <th>status</th>
+            <th>approve / reject</th>
+        </tr>
+        {% for i in man %}
+        <tr>
+            <td>{{forloop.counter}}</td>
+            <td>{{i.CompanyName}}</td>
+            <td>{{i.CompanyAddress}}</td>
+            <td>{{i.Email}}</td>
+            <td>{{i.phone}}</td>
+            <td>{{i.LOGINID.type}}</td>
+            <td>
+                <a href="/Accept_Man/{{i.id}}/">                <button>
+                    <i class="material-icons">verified</i>
+                </button></a>
+
+                <a href="/Reject_Man/{{i.id}}/">                <button>
+                    <i class="material-icons">delete</i>
+                </button></a>
+
+            </td>
+        </tr>
+        {% endfor %}
+        
+    </table>
+</body>
+</html>
