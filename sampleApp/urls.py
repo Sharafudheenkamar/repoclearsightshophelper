@@ -24,5 +24,5 @@ urlpatterns = [
     path('loginapi/',Loginapi.as_view(),name='Loginapi'),
      path('addfeedback/', FeedBackCreateAPIView.as_view(), name='add-feedback'),
 
-    path('check_product/<str:product_id>/', CheckProductInBlock.as_view(), name='check_product_in_block'),
+    path('check_product/', CheckProductInBlock.as_view(), name='check_product_in_block'),
 ]

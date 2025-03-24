@@ -192,44 +192,90 @@ class Reject_Man(View):
         
     
 import pyttsx3
+# class CheckProductInBlock(APIView):
+#     def post(self, request, product_id, *args, **kwargs):
+#         # Iterate through all blocks to check if the product ID exists in the data field
+#         try:
+#             products = ProductTable.objects.filter(ProductId=product_id).first()
+#             print(products)
+
+#         except ProductTable.DoesNotExist():
+#             return Response({"message": "No products available"}, status=status.HTTP_404_NOT_FOUND)
+
+#         # Convert product details to text
+#         text_data = ""
+#         # for product in products:
+#         if products:
+#             text_data += f"Product Name: {products.ProductName or 'N/A'}, "
+#             text_data += f"Product ID: {products.ProductId or 'N/A'}, "
+#             text_data += f"Type: {products.ProductType or 'N/A'}, "
+#             text_data += f"Manufacture Date: {products.Manufacturedate or 'N/A'}, "
+#             text_data += f"Expiry Date: {products.Expirydate or 'N/A'}, "
+#             text_data += f"Price: {products.Productprice or 'N/A'} rupees, "
+#             text_data += f"Offers: {products.Offers or 'No offers available'}. "
+
+#         # Initialize text-to-speech engine
+#         engine = pyttsx3.init()
+#         engine.setProperty('rate', 150)  # Adjust speech speed
+
+#         # # Save the speech output as an audio file
+#         # audio_path = os.path.join(settings.MEDIA_ROOT, "product_audio.mp3")
+#         # engine.save_to_file(text_data, audio_path)
+#         # engine.runAndWait()
+
+#         # # Return the audio file response
+#         # return FileResponse(open(audio_path, 'rb'), content_type='audio/mpeg', as_attachment=True, filename="product_details.mp3")
+#             # Initialize text-to-speech engine
+
+#         engine.say(text_data)  # Speak out loud through the laptop speaker
+#         engine.runAndWait()  # Wait until speaking is done
+
+#         return JsonResponse({"message": "Speaking out product details."})
+# pip install pyttsx3
+
+from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+import pyttsx3
+from .models import ProductTable
+
 class CheckProductInBlock(APIView):
-    def get(self, request, product_id, *args, **kwargs):
-        # Iterate through all blocks to check if the product ID exists in the data field
-        products = ProductTable.objects.filter(ProductId=product_id).first()
-    
-        if not products.exists():
+    def post(self, request, *args, **kwargs):
+        print(request.data)
+        product_id = list(request.data.keys())[0]  # Get the first key as Product ID
+        print(f"Extracted Product ID: {product_id}")
+        # Fetch the product details
+        product = ProductTable.objects.filter(ProductId=product_id).first()
+
+        if not product:
             return Response({"message": "No products available"}, status=status.HTTP_404_NOT_FOUND)
 
         # Convert product details to text
-        text_data = ""
-        for product in products:
-            text_data += f"Product Name: {product.ProductName or 'N/A'}, "
-            text_data += f"Product ID: {product.ProductId or 'N/A'}, "
-            text_data += f"Type: {product.ProductType or 'N/A'}, "
-            text_data += f"Manufacture Date: {product.Manufacturedate or 'N/A'}, "
-            text_data += f"Expiry Date: {product.Expirydate or 'N/A'}, "
-            text_data += f"Price: {product.Productprice or 'N/A'} rupees, "
-            text_data += f"Offers: {product.Offers or 'No offers available'}. "
+        text_data = (
+            f"Product Name: {product.ProductName or 'N/A'}, "
+            f"Product ID: {product.ProductId or 'N/A'}, "
+            f"Type: {product.ProductType or 'N/A'}, "
+            f"Manufacture Date: {product.Manufacturedate or 'N/A'}, "
+            f"Expiry Date: {product.Expirydate or 'N/A'}, "
+            f"Price: {product.Productprice or 'N/A'} rupees, "
+            f"Offers: {product.Offers or 'No offers available'}."
+        )
 
-        # Initialize text-to-speech engine
+        # Initialize and configure TTS engine
         engine = pyttsx3.init()
         engine.setProperty('rate', 150)  # Adjust speech speed
 
-        # # Save the speech output as an audio file
-        # audio_path = os.path.join(settings.MEDIA_ROOT, "product_audio.mp3")
-        # engine.save_to_file(text_data, audio_path)
-        # engine.runAndWait()
-
-        # # Return the audio file response
-        # return FileResponse(open(audio_path, 'rb'), content_type='audio/mpeg', as_attachment=True, filename="product_details.mp3")
-            # Initialize text-to-speech engine
-
-        engine.say(text_data)  # Speak out loud through the laptop speaker
-        engine.runAndWait()  # Wait until speaking is done
+        # Ensure TTS runs properly
+        try:
+            engine.say(text_data)  # Speak the product details
+            engine.runAndWait()  # Wait until speaking is done
+        except Exception as e:
+            return JsonResponse({"message": "Text-to-speech error", "error": str(e)}, status=500)
+        finally:
+            engine.stop()  # Ensure the engine is stopped
 
         return JsonResponse({"message": "Speaking out product details."})
-# pip install pyttsx3
-
 class UserRegistration(APIView):
     def post(self, request, *args, **kwargs):
         loginserializer=LoginTableSerializer(data=request.data)
